@@ -1,1 +1,12 @@
-/test
+# Dependency folders
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# OS/system files
+.DS_Store
+Thumbs.db
