@@ -1,14 +1,13 @@
-import Home from './components/Home';
-import { UserProvider } from './context/data/UserProvider';
-import { ThemeProvider } from './context/theme/ThemeProvider';
+import { WorkoutProvider } from './context/workout/workoutProvider';
+import Home from './pages/Home';
 
 const App = () => {
   return (
-    <ThemeProvider>
-      <UserProvider>
+    <div>
+      <WorkoutProvider>
         <Home />
-      </UserProvider>
-    </ThemeProvider>
+      </WorkoutProvider>
+    </div>
   );
 };
 
