@@ -14,7 +14,7 @@ const Home = () => {
     return <div className='text-center mt-10'>No Workouts Found</div>;
 
   return (
-    <div className='max-w-8xl mx-auto p-6 bg-sky-100'>
+    <div className='max-w-8xl mx-auto p-6 bg-sky-100 h-screen'>
       <h1 className='text-3xl font-bold mb-6 text-center text-gray-800'>
         Your Workouts
       </h1>

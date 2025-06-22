@@ -72,7 +72,11 @@ const updateWorkout = async (req, res) => {
     }
     const workout = await Workout.findByIdAndUpdate(
       { _id: id },
-      { ...req.body }
+      { ...req.body },
+      {
+        new: true,
+        runValidators: true,
+      }
     );
     if (!workout) {
       return res.status(404).json({ err: 'No such workout' });
@@ -88,5 +92,5 @@ module.exports = {
   getWorkouts,
   getSingleWorkout,
   deleteWorkout,
-  updateWorkout
+  updateWorkout,
 };
