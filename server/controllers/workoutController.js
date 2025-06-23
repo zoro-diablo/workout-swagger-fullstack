@@ -1,26 +1,26 @@
 const Workout = require('../models/workoutModel');
 const mongoose = require('mongoose');
 
-//Get all workout
+// Get all workouts for the authenticated user
 const getWorkouts = async (req, res) => {
   try {
-    const workout = await Workout.find({}).sort({ createdAt: -1 });
-    res.status(200).json(workout);
+    const workouts = await Workout.find({ user_id: req.user._id }).sort({ createdAt: -1 });
+    res.status(200).json(workouts);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-//Get a single workout
+// Get a single workout
 const getSingleWorkout = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ err: 'No such id' });
     }
-    const workout = await Workout.findById(id);
+    const workout = await Workout.findOne({ _id: id, user_id: req.user._id });
     if (!workout) {
-      return res.status(404).json({ err: 'No such workout' });
+      return res.status(404).json({ err: 'No such workout or unauthorized' });
     }
     res.status(200).json(workout);
   } catch (err) {
@@ -28,7 +28,7 @@ const getSingleWorkout = async (req, res) => {
   }
 };
 
-//Create a workout
+// Create a new workout
 const createWorkout = async (req, res) => {
   const { title, load, reps } = req.body;
   if (!title || !load || !reps) {
@@ -39,6 +39,7 @@ const createWorkout = async (req, res) => {
       title,
       load,
       reps,
+      user_id: req.user._id, 
     });
     res.status(200).json(workout);
   } catch (err) {
@@ -46,16 +47,16 @@ const createWorkout = async (req, res) => {
   }
 };
 
-//Delete a workout
+// Delete a specific workout
 const deleteWorkout = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ err: 'No such id' });
     }
-    const workout = await Workout.findByIdAndDelete({ _id: id });
+    const workout = await Workout.findOneAndDelete({ _id: id, user_id: req.user._id });
     if (!workout) {
-      return res.status(404).json({ err: 'No such workout' });
+      return res.status(404).json({ err: 'No such workout or unauthorized' });
     }
     res.status(200).json(workout);
   } catch (err) {
@@ -63,15 +64,15 @@ const deleteWorkout = async (req, res) => {
   }
 };
 
-//Update workout
+// Update a specific workout
 const updateWorkout = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ err: 'No such id' });
     }
-    const workout = await Workout.findByIdAndUpdate(
-      { _id: id },
+    const workout = await Workout.findOneAndUpdate(
+      { _id: id, user_id: req.user._id },
       { ...req.body },
       {
         new: true,
@@ -79,7 +80,7 @@ const updateWorkout = async (req, res) => {
       }
     );
     if (!workout) {
-      return res.status(404).json({ err: 'No such workout' });
+      return res.status(404).json({ err: 'No such workout or unauthorized' });
     }
     res.status(200).json(workout);
   } catch (err) {
