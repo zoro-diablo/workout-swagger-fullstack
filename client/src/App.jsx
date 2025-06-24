@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import WorkoutPage from './components/WorkoutPage';
 import { WorkoutProvider } from './context/workout/workoutProvider';
-
 import Home from './pages/Home';
 import { AuthProvider } from './context/auth/authProvider';
 import { Header } from './components/Header';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import AdminDashboard from './pages/AdminDashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 const App = () => {
@@ -38,6 +38,14 @@ const App = () => {
                   <WorkoutProvider>
                     <WorkoutPage />
                   </WorkoutProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/admin'
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminDashboard />
                 </ProtectedRoute>
               }
             />

@@ -1,10 +1,11 @@
 const Workout = require('../models/workoutModel');
 const mongoose = require('mongoose');
 
-// Get all workouts for the authenticated user
+// Get all workouts for the authenticated user or all workouts for admin
 const getWorkouts = async (req, res) => {
   try {
-    const workouts = await Workout.find({ user_id: req.user._id }).sort({ createdAt: -1 });
+    const query = req.user.role === 'admin' ? {} : { user_id: req.user._id };
+    const workouts = await Workout.find(query).sort({ createdAt: -1 });
     res.status(200).json(workouts);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -18,7 +19,8 @@ const getSingleWorkout = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ err: 'No such id' });
     }
-    const workout = await Workout.findOne({ _id: id, user_id: req.user._id });
+    const query = req.user.role === 'admin' ? { _id: id } : { _id: id, user_id: req.user._id };
+    const workout = await Workout.findOne(query);
     if (!workout) {
       return res.status(404).json({ err: 'No such workout or unauthorized' });
     }
@@ -39,7 +41,7 @@ const createWorkout = async (req, res) => {
       title,
       load,
       reps,
-      user_id: req.user._id, 
+      user_id: req.user._id,
     });
     res.status(200).json(workout);
   } catch (err) {
@@ -54,7 +56,8 @@ const deleteWorkout = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ err: 'No such id' });
     }
-    const workout = await Workout.findOneAndDelete({ _id: id, user_id: req.user._id });
+    const query = req.user.role === 'admin' ? { _id: id } : { _id: id, user_id: req.user._id };
+    const workout = await Workout.findOneAndDelete(query);
     if (!workout) {
       return res.status(404).json({ err: 'No such workout or unauthorized' });
     }
@@ -71,8 +74,9 @@ const updateWorkout = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).json({ err: 'No such id' });
     }
+    const query = req.user.role === 'admin' ? { _id: id } : { _id: id, user_id: req.user._id };
     const workout = await Workout.findOneAndUpdate(
-      { _id: id, user_id: req.user._id },
+      query,
       { ...req.body },
       {
         new: true,

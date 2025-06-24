@@ -6,12 +6,11 @@ import useAuthInterceptor from '../../hooks/useAuthInterceptor';
 import { useNavigate } from 'react-router';
 
 export const WorkoutProvider = ({ children }) => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [workouts, setWorkouts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-    const navigate = useNavigate();
-
+  const navigate = useNavigate();
 
   const handleUnauthorized = () => {
     setError('Session expired. Please log in again.');
@@ -81,6 +80,7 @@ export const WorkoutProvider = ({ children }) => {
         addWorkout,
         deleteWorkout,
         updateWorkout,
+        isAdmin: user?.role === 'admin',
       }}
     >
       {children}

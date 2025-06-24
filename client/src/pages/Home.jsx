@@ -2,16 +2,25 @@ import { useContext } from 'react';
 import WorkoutCard from '../components/WorkoutCard';
 import WorkoutForm from '../components/WorkoutForm';
 import { WorkoutContext } from '../context/workout/workoutContext';
+import { useAuth } from '../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 const Home = () => {
   const { workouts, loading, error } = useContext(WorkoutContext);
+  const { user } = useAuth();
 
   return (
     <div className='max-w-8xl mx-auto p-6 bg-sky-100 min-h-screen'>
       <h1 className='text-3xl font-bold mb-6 text-center text-gray-800'>
         Your Workouts
       </h1>
-
+      {user?.role === 'admin' && (
+        <div className='text-center mb-4'>
+          <Link to='/admin' className='text-blue-400 hover:underline'>
+            Admin Dashboard
+          </Link>
+        </div>
+      )}
       <div className='flex flex-col md:flex-row gap-8'>
         {/* Workout Form: Always visible */}
         <div className='md:w-1/3'>

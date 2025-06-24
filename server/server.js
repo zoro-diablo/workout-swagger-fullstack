@@ -10,6 +10,7 @@ const helmet = require('helmet');
 const { globalLimiter, loginLimiter } = require('./middleware/rateLimiter');
 const workOutRoutes = require('./routes/workouts');
 const userRoutes = require('./routes/user');
+const adminRoutes = require('./routes/admin');
 const logger = require('./middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -51,6 +52,7 @@ app.use(logger);
 // Route handlers for API endpoints
 app.use('/api/workouts', workOutRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error handler
 app.use(errorHandler);

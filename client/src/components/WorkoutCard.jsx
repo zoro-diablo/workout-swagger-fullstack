@@ -1,13 +1,25 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { WorkoutContext } from '../context/workout/workoutContext';
 import { Link } from 'react-router-dom';
 
 const WorkoutCard = ({ workout }) => {
   const { deleteWorkout } = useContext(WorkoutContext);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this workout?')) {
-      await deleteWorkout(workout._id);
+      setIsDeleting(true);
+      setError('');
+      try {
+        await deleteWorkout(workout._id);
+      } catch (err) {
+        const errorMessage =
+          err.response?.data?.err || 'Failed to delete workout';
+        setError(errorMessage);
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
@@ -22,11 +34,16 @@ const WorkoutCard = ({ workout }) => {
           Load: <span className='font-medium'>{workout.load} kg</span>
         </p>
       </Link>
+      {error && <div className='text-red-500 text-sm mt-2'>{error}</div>}
       <button
         onClick={handleDelete}
-        className='absolute top-3 right-3 text-sm text-red-600 hover:underline hover:cursor-pointer'
+        disabled={isDeleting}
+        aria-label={`Delete workout: ${workout.title}`}
+        className={`absolute top-3 right-3 text-sm text-red-600 hover:underline ${
+          isDeleting ? 'opacity-50 cursor-not-allowed' : 'hover:cursor-pointer'
+        }`}
       >
-        Delete
+        {isDeleting ? 'Deleting...' : 'Delete'}
       </button>
     </div>
   );

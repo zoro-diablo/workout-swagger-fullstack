@@ -14,10 +14,15 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
 });
 
 // Static method for user signup
-userSchema.statics.signup = async function (email, password) {
+userSchema.statics.signup = async function (email, password, role = 'user') {
   if (!email || !password) {
     throw Error('All fields must be filled');
   }
@@ -26,6 +31,9 @@ userSchema.statics.signup = async function (email, password) {
   }
   if (!validator.isStrongPassword(password)) {
     throw Error('Password is not strong enough');
+  }
+  if (!['user', 'admin'].includes(role)) {
+    throw Error('Invalid role');
   }
 
   const exists = await this.findOne({ email });
@@ -37,13 +45,13 @@ userSchema.statics.signup = async function (email, password) {
   const salt = await bcrypt.genSalt(10);
   const hash = await bcrypt.hash(password, salt);
 
-  const user = await this.create({ email, password: hash });
+  const user = await this.create({ email, password: hash, role });
 
   return user;
 };
 
 // Static method for user login
-userSchema.statics.login = async function (email,password) {
+userSchema.statics.login = async function (email, password) {
    if (!email || !password) {
     throw Error('All fields must be filled');
   }
@@ -54,10 +62,10 @@ userSchema.statics.login = async function (email,password) {
     throw Error('Incorrect Email');
   }
 
-  const match = await bcrypt.compare(password,user.password)
+  const match = await bcrypt.compare(password, user.password)
 
-  if(!match){
-    throw Error('Incorrect Password')
+  if (!match) {
+    throw Error('Incorrect Password');
   }
 
   return user;
