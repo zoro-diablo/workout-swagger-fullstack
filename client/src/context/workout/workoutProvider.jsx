@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
 import { WorkoutContext } from './workoutContext';
 import axios from 'axios';
+import { useAuth } from '../../hooks/useAuth';
+import useAuthInterceptor from '../../hooks/useAuthInterceptor';
 
 export const WorkoutProvider = ({ children }) => {
+  const { token } = useAuth();
   const [workouts, setWorkouts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useAuthInterceptor(token);
 
   useEffect(() => {
     const fetchWorkout = async () => {
@@ -19,8 +24,12 @@ export const WorkoutProvider = ({ children }) => {
       }
     };
 
-    fetchWorkout();
-  }, []);
+    if (token) {
+      fetchWorkout();
+    } else {
+      setLoading(false);
+    }
+  }, [token]);
 
   const addWorkout = (workout) => {
     setWorkouts((prev) => [workout, ...prev]);
@@ -54,7 +63,6 @@ export const WorkoutProvider = ({ children }) => {
       throw err;
     }
   };
-
 
   return (
     <WorkoutContext.Provider
