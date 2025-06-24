@@ -11,7 +11,7 @@ tags:
   - name: Workout
     description: Operations related to workout management
   - name: Auth
-    description: User authentication (signup and login)
+    description: User authentication (signup, login, and admin signup)
   - name: Admin
     description: Admin-only operations for user management
 
@@ -244,7 +244,6 @@ paths:
     post:
       tags:
         - Auth
-        - Admin
       summary: Sign up a new admin user
       description: Registers a new user with the 'admin' role. Requires admin authentication.
       security:
