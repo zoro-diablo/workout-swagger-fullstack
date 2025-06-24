@@ -11,7 +11,12 @@ const WorkoutPage = () => {
   const navigate = useNavigate();
   const { token } = useAuth();
 
-  useAuthInterceptor(token)
+  const handleUnauthorized = () => {
+    setError('Session expired. Please log in again.');
+    navigate('/login');
+  };
+
+  useAuthInterceptor(token, handleUnauthorized);
 
   const [workout, setWorkout] = useState(null);
   const [loading, setLoading] = useState(true);

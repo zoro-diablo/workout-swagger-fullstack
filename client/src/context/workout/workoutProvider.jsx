@@ -3,14 +3,22 @@ import { WorkoutContext } from './workoutContext';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 import useAuthInterceptor from '../../hooks/useAuthInterceptor';
+import { useNavigate } from 'react-router';
 
 export const WorkoutProvider = ({ children }) => {
   const { token } = useAuth();
   const [workouts, setWorkouts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
-  useAuthInterceptor(token);
+
+  const handleUnauthorized = () => {
+    setError('Session expired. Please log in again.');
+    navigate('/login');
+  };
+
+  useAuthInterceptor(token, handleUnauthorized);
 
   useEffect(() => {
     const fetchWorkout = async () => {
