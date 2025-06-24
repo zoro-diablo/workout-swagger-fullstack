@@ -1,15 +1,15 @@
 import { useContext, useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { WorkoutContext } from '../context/workout/workoutContext';
-import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import { AuthContext } from '../context/auth/authContext';
 
 const BASE_URL = 'http://localhost:4000';
 
 const WorkoutPage = () => {
   const { workouts, deleteWorkout, updateWorkout } = useContext(WorkoutContext);
+  const {token} = useContext(AuthContext)
   const { id } = useParams();
-  const { token } = useAuth();
   const navigate = useNavigate();
 
   const [workout, setWorkout] = useState(null);
@@ -23,68 +23,72 @@ const WorkoutPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const localWorkout =
-      workouts && Array.isArray(workouts)
-        ? workouts.find((w) => w._id === id)
-        : null;
+    const local = Array.isArray(workouts)
+      ? workouts.find((w) => w._id === id)
+      : null;
 
-    if (localWorkout) {
-      setWorkout(localWorkout);
-      setTitle(localWorkout.title);
-      setReps(localWorkout.reps.toString());
-      setLoad(localWorkout.load.toString());
+    if (local) {
+      setWorkout(local);
+      setTitle(local.title);
+      setReps(local.reps.toString());
+      setLoad(local.load.toString());
       setLoading(false);
-    } else {
-      const fetchWorkout = async () => {
-        try {
-          const res = await axios.get(`${BASE_URL}/api/workouts/${id}`, {
+      return;
+    }
+
+    // otherwise fetch it from the API
+    const fetchWorkout = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/workouts/${id}`,{
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          setWorkout(res.data);
-          setTitle(res.data.title);
-          setReps(res.data.reps.toString());
-          setLoad(res.data.load.toString());
-        } catch (err) {
-          const errorMessage =
-            err.response?.data?.err === 'No such workout or unauthorized'
-              ? 'You are not authorized to access this workout'
-              : err.response?.data?.err || 'Failed to fetch workout';
-          setError(errorMessage);
-          if (err.response?.status === 404) {
-            navigate('/');
-          }
-        } finally {
-          setLoading(false);
+        setWorkout(res.data);
+        setTitle(res.data.title);
+        setReps(res.data.reps.toString());
+        setLoad(res.data.load.toString());
+      } catch (err) {
+        const msg =
+          err.response?.data?.err === 'No such workout or unauthorized'
+            ? 'You are not authorized to access this workout'
+            : err.response?.data?.err || 'Failed to fetch workout';
+        setError(msg);
+        if (err.response?.status === 404) {
+          navigate('/');
         }
-      };
-      fetchWorkout();
-    }
-  }, [workouts, id, navigate, token]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWorkout();
+  }, [workouts, id, navigate]);
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this workout?')) {
-      setIsDeleting(true);
-      setError('');
-      try {
-        await deleteWorkout(id);
-        navigate('/');
-      } catch (err) {
-        const errorMessage =
-          err.response?.data?.err === 'No such workout or unauthorized'
-            ? 'You are not authorized to delete this workout'
-            : 'Failed to delete workout';
-        setError(errorMessage);
-      } finally {
-        setIsDeleting(false);
-      }
+    if (!window.confirm('Are you sure you want to delete this workout?')) {
+      return;
+    }
+    setIsDeleting(true);
+    setError('');
+    try {
+      await deleteWorkout(id);
+      navigate('/');
+    } catch (err) {
+      const msg =
+        err.response?.data?.err === 'No such workout or unauthorized'
+          ? 'You are not authorized to delete this workout'
+          : 'Failed to delete workout';
+      setError(msg);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const handleUpdate = async () => {
     setFormError('');
     setIsUpdating(true);
+
     if (!title || !reps || !load) {
       setFormError('All fields are required');
       setIsUpdating(false);
@@ -102,20 +106,21 @@ const WorkoutPage = () => {
         reps: Number(reps),
         load: Number(load),
       });
-      setFormError('');
       navigate('/');
     } catch (err) {
-      const errorMessage =
+      const msg =
         err.response?.data?.err === 'No such workout or unauthorized'
           ? 'You are not authorized to update this workout'
           : err.response?.data?.err || 'Failed to update workout';
-      setFormError(errorMessage);
+      setFormError(msg);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  if (loading) return <div className='text-center mt-10'>Loading...</div>;
+  if (loading) {
+    return <div className='text-center mt-10'>Loading...</div>;
+  }
 
   if (error || !workout) {
     return (

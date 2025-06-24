@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { AuthContext } from '../context/auth/authContext';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading, error, clearError } = useAuth();
+  const { login, loading, error, clearError } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -16,10 +16,11 @@ const LoginPage = () => {
       return;
     }
 
- 
     try {
-      await login(email, password);
-      navigate('/'); 
+      const result = await login(email, password);
+      if (result.success) {
+        navigate('/');
+      }
     } catch (err) {
       console.error('Login error:', err);
     }

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import useAuthInterceptor from '../../hooks/useAuthInterceptor';
 import { AuthContext } from './authContext';
 
 const BASE_URL = 'http://localhost:4000';
@@ -14,20 +13,6 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Handle 401 errors
-  const handleUnauthorized = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
-    localStorage.removeItem('role');
-    setToken(null);
-    setUser(null);
-    setIsAuthenticated(false);
-    setError('Session expired. Please log in again.');
-    navigate('/login');
-  };
-
-  useAuthInterceptor(token, handleUnauthorized);
-
   // Initialize state based on localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -35,14 +20,14 @@ export const AuthProvider = ({ children }) => {
     const storedRole = localStorage.getItem('role');
 
     if (storedToken && storedEmail && storedRole) {
-      setUser({ email: storedEmail, role: storedRole });
       setToken(storedToken);
+      setUser({ email: storedEmail, role: storedRole });
       setIsAuthenticated(true);
     }
     setLoading(false);
   }, []);
 
-  // Login 
+  // Login (public)
   const login = async (email, password) => {
     try {
       setLoading(true);
@@ -62,19 +47,18 @@ export const AuthProvider = ({ children }) => {
       setToken(authToken);
       setUser({ email: userEmail, role });
       setIsAuthenticated(true);
-      setLoading(false);
-      navigate('/'); 
-
+      navigate('/');
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.err || 'Login failed';
-      setError(errorMessage);
+      const msg = err.response?.data?.err || 'Login failed';
+      setError(msg);
+      return { success: false, error: msg };
+    } finally {
       setLoading(false);
-      return { success: false, error: errorMessage };
     }
   };
 
-  // Signup 
+  // Signup (public)
   const signup = async (email, password) => {
     try {
       setLoading(true);
@@ -94,15 +78,14 @@ export const AuthProvider = ({ children }) => {
       setToken(authToken);
       setUser({ email: userEmail, role });
       setIsAuthenticated(true);
-      setLoading(false);
-      navigate('/'); 
-
+      navigate('/');
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.err || 'Signup failed';
-      setError(errorMessage);
+      const msg = err.response?.data?.err || 'Signup failed';
+      setError(msg);
+      return { success: false, error: msg };
+    } finally {
       setLoading(false);
-      return { success: false, error: errorMessage };
     }
   };
 
@@ -112,10 +95,15 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const response = await axios.post(`${BASE_URL}/api/user/signup-admin`, {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${BASE_URL}/api/user/signup-admin`,
+        { email, password },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const { token: authToken, email: userEmail, role } = response.data;
 
@@ -126,19 +114,18 @@ export const AuthProvider = ({ children }) => {
       setToken(authToken);
       setUser({ email: userEmail, role });
       setIsAuthenticated(true);
-      setLoading(false);
-      navigate('/'); 
-
+      navigate('/');
       return { success: true };
     } catch (err) {
-      const errorMessage = err.response?.data?.err || 'Admin signup failed';
-      setError(errorMessage);
+      const msg = err.response?.data?.err || 'Admin signup failed';
+      setError(msg);
+      return { success: false, error: msg };
+    } finally {
       setLoading(false);
-      return { success: false, error: errorMessage };
     }
   };
 
-  // Logout 
+  // Logout
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('email');
@@ -147,28 +134,26 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     setError(null);
-    navigate('/login'); 
+    navigate('/login');
   };
 
-  const clearError = () => {
-    setError(null);
-  };
-
-  const value = {
-    user,
-    token,
-    isAuthenticated,
-    loading,
-    error,
-    login,
-    signup,
-    signupAdmin,
-    logout,
-    clearError,
-  };
+  const clearError = () => setError(null);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isAuthenticated,
+        loading,
+        error,
+        login,
+        signup,
+        signupAdmin,
+        logout,
+        clearError,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

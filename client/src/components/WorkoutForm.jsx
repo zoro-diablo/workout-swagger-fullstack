@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { useContext, useState } from 'react';
 import { WorkoutContext } from '../context/workout/workoutContext';
+import { AuthContext } from '../context/auth/authContext';
 
 const WorkoutForm = () => {
   const { addWorkout } = useContext(WorkoutContext);
+  const { token } = useContext(AuthContext);
   const [title, setTitle] = useState('');
   const [reps, setReps] = useState('');
   const [load, setLoad] = useState('');
@@ -17,7 +19,12 @@ const WorkoutForm = () => {
     try {
       const response = await axios.post(
         'http://localhost:4000/api/workouts',
-        workout
+        workout,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       setTitle('');
       setReps('');

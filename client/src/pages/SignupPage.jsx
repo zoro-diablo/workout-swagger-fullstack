@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { AuthContext } from '../context/auth/authContext';
 
 const SignupPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const { signup, loading, error, clearError } = useAuth();
+  
+  const { signup, loading, error, clearError } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {

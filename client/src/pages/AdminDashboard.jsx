@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import { AuthContext } from '../context/auth/authContext';
 
 const BASE_URL = 'http://localhost:4000';
 
 const AdminDashboard = () => {
-  const { user, signupAdmin, token } = useAuth();
+  const { user, signupAdmin, token } = useContext(AuthContext);
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
