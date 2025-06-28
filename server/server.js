@@ -13,6 +13,7 @@ const userRoutes = require('./routes/user');
 const adminRoutes = require('./routes/admin');
 const logger = require('./middleware/logger');
 const errorHandler = require('./middleware/errorHandler');
+const routeNotFound = require('./middleware/routeNotFound');
 
 // Swagger YAML documentation
 const swaggerDocument = YAML.load('./swagger.yaml');
@@ -25,7 +26,6 @@ const app = express();
 // Secure HTTP headers
 app.use(helmet());
 
-
 // CORS
 app.use(
   cors({
@@ -34,7 +34,7 @@ app.use(
   })
 );
 
-// Serve Swagger UI 
+// Serve Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Parse incoming JSON payloads
@@ -46,7 +46,7 @@ app.use(globalLimiter);
 // Login route-specific rate limiter
 app.use('/api/user/login', loginLimiter);
 
-// Logger middleware 
+// Logger middleware
 app.use(logger);
 
 // Route handlers for API endpoints
@@ -58,6 +58,9 @@ app.use('/api/admin', adminRoutes);
 app.get('/health', (req, res) => {
   res.send('Server is healthy');
 });
+
+// Route fallback
+app.use(routeNotFound);
 
 // Error handler
 app.use(errorHandler);
