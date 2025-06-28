@@ -22,6 +22,9 @@ const mongo = process.env.MONGO_URI;
 
 const app = express();
 
+// Secure HTTP headers
+app.use(helmet());
+
 
 // CORS
 app.use(
@@ -37,9 +40,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Parse incoming JSON payloads
 app.use(express.json());
 
-// Secure HTTP headers
-app.use(helmet());
-
 // Global rate limiter
 app.use(globalLimiter);
 
@@ -53,6 +53,11 @@ app.use(logger);
 app.use('/api/workouts', workOutRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Health Check
+app.get('/health', (req, res) => {
+  res.send('Server is healthy');
+});
 
 // Error handler
 app.use(errorHandler);
